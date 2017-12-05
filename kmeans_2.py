@@ -66,9 +66,10 @@ vor = Voronoi(final_centers)
 voronoi_plot_2d(vor)
 
 # scatter points and centers
-plt.scatter([p[0] for p in points], [p[1] for p in points], marker='.')
+plt.scatter([p[0] for p in points], [p[1] for p in points], marker='x')
 plt.scatter([c[0] for c in final_centers], [c[1] for c in final_centers], marker='o', s=80, facecolors='r', edgecolors='r')
 plt.scatter([c[0] for c in initial_centers], [c[1] for c in initial_centers], marker='o', s=80, facecolors='b', edgecolors='b')
+
 axes = plt.gca()
 axes.set_xlim([-180, 180])
 axes.set_ylim([-180, 180])
