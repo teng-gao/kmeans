@@ -1,17 +1,25 @@
+#Citation for formula used: https://superuser.com/questions/602798/how-to-do-a-great-circle-calculation-in-ms-excel-or-libreoffice
 import math, sys
 from operator import add
 from pyspark import SparkContext
 
 # Usage: kmeans_exec.py <input file> <k> <distance measure>
-# spark-submit --master yarn-cluster kmeans_exec.py lat_longs_test.txt 4
-# spark-submit --master yarn-client kmeans_exec.py lat_longs_test.txt 4
-# spark-submit --master local[*] kmeans_exec.py lat_longs_test.txt 4
+# hadoop fs -rm -r kmeans_out
+# spark-submit --master yarn-cluster kmeans_exec.py lat_longs_test.txt 4 Euclidean
+# spark-submit --master yarn-client kmeans_exec.py lat_longs_test.txt 4 Euclidean
+# spark-submit --master local[*] kmeans_exec.py lat_longs_test.txt 4 Euclidean
+# spark-submit --master yarn-cluster kmeans_exec.py lat_longs_test.txt 4 Euclidean
+# spark-submit --master yarn-client kmeans_exec.py lat_longs_test.txt 4 Euclidean
+# spark-submit --master local[*] kmeans_exec.py lat_longs.txt 4 Euclidean
+# spark-submit --master yarn-cluster kmeans_exec.py lat_longs.txt 4 GreatCircleDistance
+# hadoop fs -cat kmeans_out/final_centers/part-00000
+
 if __name__ == "__main__":
     sc = SparkContext()
 
     input_file = sys.argv[1]
     k = int(sys.argv[2])
-    distance_measure = 'Euclidean'
+    distance_measure = str(sys.argv[3])
     print("Reading from %s, k value %s" % (input_file, k))
 
     def addPoints(p1,p2):
@@ -21,11 +29,28 @@ if __name__ == "__main__":
         return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
 
     def closestPoint(p, centers):
-        distances = [EuclideanDistance(p, center) for center in centers]
+        distances = [distance(p, center) for center in centers]
         return distances.index(min(distances))
 
     def GreatCircleDistance(p1, p2):
-        pass
+        lat1 = p1[0]
+        longe1 = p1[1]
+        lat2 = p2[0]
+        longe2 = p2[1]
+    	radius = 3959 #miles
+    	lat1_radians = math.radians(lat1)
+    	longe1_radians = math.radians(longe1)
+    	lat2_radians = math.radians(lat2)
+    	longe2_radians = math.radians(longe2)
+    	dlat = lat2_radians - lat1_radians
+    	dlonge = longe2_radians - longe1_radians
+    	a = math.sin(dlat/2) * math.sin(dlat/2) + math.sin(dlonge/2) * math.sin(dlonge/2) * math.cos(lat1_radians) * math.cos(lat2_radians)
+    	c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    	d = radius * c
+    	return d
+
+    def distance(p1, p2):
+        return EuclideanDistance(p1,p2) if distance_measure == 'Euclidean' else GreatCircleDistance(p1, p2)
 
     # read data and parse
     dat = sc.textFile(input_file).map(lambda line: line.split(' '))
@@ -52,7 +77,7 @@ if __name__ == "__main__":
         # produce (center index, augmented point) pair
         center_point = points.keyBy(lambda point: closestPoint(point[:2], centers))
         # compute the error
-        error = center_point.map(lambda (ci, p): EuclideanDistance(centers[ci], p)**2).reduce(lambda v1, v2: v1+v2)
+        error = center_point.map(lambda (ci, p): distance(centers[ci], p)**2).reduce(lambda v1, v2: v1+v2)
         errors.append(error)
         print("Error of current center: %s" % error)
         # sum all point coordinate for each cluster
@@ -62,7 +87,7 @@ if __name__ == "__main__":
         print("New centers: ")
         print(new_centers)
         # see if change of centers are small enough for termination
-        change = sum([EuclideanDistance(old, new) for (old, new) in zip(centers, new_centers)])
+        change = sum([distance(old, new) for (old, new) in zip(centers, new_centers)])
         print("Change since last center: %s" % change)
         # update the centers
         centers = list(new_centers)
@@ -75,13 +100,15 @@ if __name__ == "__main__":
     print("Errors: ")
     print(errors)
 
-    sc.parallelize(centers_final).saveAsTextFile('final_centers')
+    print("Saving final centers")
+    sc.parallelize(centers_final).saveAsTextFile('kmeans_out/final_centers')
 
     # final clusters
+    print("Saving final clusters")
     final_clusters = points.keyBy(lambda point: closestPoint(point[:2], centers_final))
 
     def RDD_to_lines(dat):
         return ','.join([str(dat[0]), str(dat[1][0]), str(dat[1][1])])
 
     lines = final_clusters.map(RDD_to_lines)
-    lines.saveAsTextFile('final_clusters')
+    lines.saveAsTextFile('kmeans_out/final_clusters')
