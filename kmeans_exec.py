@@ -70,7 +70,7 @@ if __name__ == "__main__":
     points.persist()
 
     # random generate initial k centers
-    centers = [(point[0], point[1]) for point in points.takeSample(True, k)]
+    centers = [(point[0], point[1]) for point in points.takeSample(True, k, seed = 0)]
     print("Initial centers:")
     print(centers)
     new_centers = [(0,0)] * k

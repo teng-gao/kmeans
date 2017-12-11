@@ -40,12 +40,15 @@ with open(clusters_file, 'r') as f:
     colors = [color_dict[int(point[2])] for point in lines]
 
 # scatter points and centers
-plt.scatter([p[1] for p in points], [p[0] for p in points], marker='x', color=colors)
-plt.scatter([c[1] for c in final_centers], [c[0] for c in final_centers], marker='o', s=80, facecolors='r', edgecolors='b')
+plt.scatter([p[1] for p in points], [p[0] for p in points], marker='o', color=colors, s=4)
+plt.scatter([c[1] for c in final_centers], [c[0] for c in final_centers], marker='x', s=80, facecolors='r', edgecolors='b')
 # plt.scatter([c[0] for c in initial_centers], [c[1] for c in initial_centers], marker='o', s=80, facecolors='b', edgecolors='b')
+
+plt.ylabel('Latitude')
+plt.xlabel('Longtitude')
 
 # axes = plt.gca()
 # axes.set_xlim([-180, 180])
 # axes.set_ylim([-180, 180])
 # plt.show()
-plt.savefig(out_file)
+plt.savefig(out_file, dpi = 300)
