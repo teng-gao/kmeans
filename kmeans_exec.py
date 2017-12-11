@@ -3,7 +3,7 @@ import math, sys
 from operator import add
 from pyspark import SparkContext
 
-# Usage: kmeans_exec.py <input file> <k> <distance measure>
+# Usage: kmeans_exec.py <input file> <k> <distance measure> <final centers output> <final cluster output> <delimiter>
 # hadoop fs -rm -r kmeans_out
 # spark-submit --master yarn-cluster kmeans_exec.py lat_longs_test.txt 4 Euclidean
 # spark-submit --master yarn-client kmeans_exec.py lat_longs_test.txt 4 Euclidean
@@ -20,6 +20,16 @@ if __name__ == "__main__":
     input_file = sys.argv[1]
     k = int(sys.argv[2])
     distance_measure = str(sys.argv[3])
+    final_centers_output = str(sys.argv[4])
+    final_clusters_output = str(sys.argv[5])
+    # set delimiter
+    if str(sys.argv[6]).lower() == 'tab':
+        sep = '\t'
+    elif str(sys.argv[6]).lower() == 'comma':
+        sep = ','
+    else:
+        sep = ' '
+
     print("Reading from %s, k value %s" % (input_file, k))
 
     def addPoints(p1,p2):
@@ -53,7 +63,7 @@ if __name__ == "__main__":
         return EuclideanDistance(p1,p2) if distance_measure == 'Euclidean' else GreatCircleDistance(p1, p2)
 
     # read data and parse
-    dat = sc.textFile(input_file).map(lambda line: line.split(' '))
+    dat = sc.textFile(input_file).map(lambda line: line.split(sep)).filter(lambda x: x[0] != "")
 
     # augment the points by 1 to keep track of number of points summed
     points = dat.map(lambda p: (float(p[0]), float(p[1]), 1))
@@ -101,14 +111,16 @@ if __name__ == "__main__":
     print(errors)
 
     print("Saving final centers")
-    sc.parallelize(centers_final).saveAsTextFile('kmeans_out/final_centers')
+    # sc.parallelize(centers_final).saveAsTextFile('kmeans_out/final_centers')
+    sc.parallelize(centers_final).saveAsTextFile(final_centers_output)
 
     # final clusters
     print("Saving final clusters")
     final_clusters = points.keyBy(lambda point: closestPoint(point[:2], centers_final))
 
     def RDD_to_lines(dat):
-        return ','.join([str(dat[0]), str(dat[1][0]), str(dat[1][1])])
+        return ','.join([str(dat[1][0]), str(dat[1][1]), str(dat[0])])
 
     lines = final_clusters.map(RDD_to_lines)
-    lines.saveAsTextFile('kmeans_out/final_clusters')
+    # lines.saveAsTextFile('kmeans_out/final_clusters')
+    lines.saveAsTextFile(final_clusters_output)
