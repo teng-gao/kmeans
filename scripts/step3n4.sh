@@ -17,10 +17,15 @@ spark-submit --master local[*] kmeans_exec.py sample_geo.txt 2 GreatCircleDistan
 hadoop fs -get synthetic_cir_k2
 
 # visualize synthetic location data
-python2.7 visualize.py synthetic_euc_k4/centers/part-00000 synthetic_euc_k4/clusters/part-00000 comma kmeans/trunk/synthetic_euc_k4.png
-python2.7 visualize.py synthetic_euc_k2/centers/part-00000 synthetic_euc_k2/clusters/part-00000 comma kmeans/trunk/synthetic_euc_k2.png
-python2.7 visualize.py synthetic_cir_k4/centers/part-00000 synthetic_cir_k4/clusters/part-00000 comma kmeans/trunk/synthetic_cir_k4.png
-python2.7 visualize.py synthetic_cir_k2/centers/part-00000 synthetic_cir_k2/clusters/part-00000 comma kmeans/trunk/synthetic_cir_k2.png
+python2.7 visualize.py synthetic_euc_k4/centers/part-00000 synthetic_euc_k4/clusters/part-00000 comma kmeans/trunk/plots/synthetic_euc_k4.png
+python2.7 visualize.py synthetic_euc_k2/centers/part-00000 synthetic_euc_k2/clusters/part-00000 comma kmeans/trunk/plots/synthetic_euc_k2.png
+python2.7 visualize.py synthetic_cir_k4/centers/part-00000 synthetic_cir_k4/clusters/part-00000 comma kmeans/trunk/plots/synthetic_cir_k4.png
+python2.7 visualize.py synthetic_cir_k2/centers/part-00000 synthetic_cir_k2/clusters/part-00000 comma kmeans/trunk/plots/synthetic_cir_k2.png
+
+python2.7 visualize_map.py synthetic_euc_k4/centers/part-00000 synthetic_euc_k4/clusters/part-00000 comma kmeans/trunk/plots/synthetic_euc_k4_map.png
+python2.7 visualize_map.py synthetic_euc_k2/centers/part-00000 synthetic_euc_k2/clusters/part-00000 comma kmeans/trunk/plots/synthetic_euc_k2_map.png
+python2.7 visualize_map.py synthetic_cir_k4/centers/part-00000 synthetic_cir_k4/clusters/part-00000 comma kmeans/trunk/plots/synthetic_cir_k4_map.png
+python2.7 visualize_map.py synthetic_cir_k2/centers/part-00000 synthetic_cir_k2/clusters/part-00000 comma kmeans/trunk/plots/synthetic_cir_k2_map.png
 
 # cluster device data
 hadoop fs -rm -r device_euc_k5
@@ -32,8 +37,11 @@ spark-submit --master local[*] kmeans_exec.py device_data.txt 5 GreatCircleDista
 rm -rf device_cir_k5; hadoop fs -get device_cir_k5
 
 # visualize device data
-python2.7 visualize.py device_euc_k5/centers/part-00000 device_euc_k5/clusters/part-00000 comma kmeans/trunk/device_euc_k5.png
-python2.7 visualize.py device_cir_k5/centers/part-00000 device_cir_k5/clusters/part-00000 comma kmeans/trunk/device_cir_k5.png
+python2.7 visualize.py device_euc_k5/centers/part-00000 device_euc_k5/clusters/part-00000 comma kmeans/trunk/plots/device_euc_k5.png
+python2.7 visualize.py device_cir_k5/centers/part-00000 device_cir_k5/clusters/part-00000 comma kmeans/trunk/plots/device_cir_k5.png
+
+python2.7 visualize_map.py device_euc_k5/centers/part-00000 device_euc_k5/clusters/part-00000 comma kmeans/trunk/plots/device_euc_k5_map.png
+python2.7 visualize_map.py device_cir_k5/centers/part-00000 device_cir_k5/clusters/part-00000 comma kmeans/trunk/plots/device_cir_k5_map.png
 
 # cluster DBpedia data
 hadoop fs -rm -r dbpedia_euc_k6
@@ -45,8 +53,11 @@ spark-submit --master local[*] kmeans_exec.py lat_longs.txt 6 GreatCircleDistanc
 hadoop fs -get dbpedia_cir_k6
 
 # visualize dbpedia data
-python2.7 visualize.py dbpedia_euc_k6/centers/part-00000 dbpedia_euc_k6/clusters/part-00000 comma kmeans/trunk/dbpedia_euc_k6.png
-python2.7 visualize.py dbpedia_cir_k6/centers/part-00000 dbpedia_cir_k6/clusters/part-00000 comma kmeans/trunk/dbpedia_cir_k6.png
+python2.7 visualize.py dbpedia_euc_k6/centers/part-00000 dbpedia_euc_k6/clusters/part-00000 comma kmeans/trunk/plots/dbpedia_euc_k6.png
+python2.7 visualize.py dbpedia_cir_k6/centers/part-00000 dbpedia_cir_k6/clusters/part-00000 comma kmeans/trunk/plots/dbpedia_cir_k6.png
+
+python2.7 visualize_map.py dbpedia_euc_k6/centers/part-00000 dbpedia_euc_k6/clusters/part-00000 comma kmeans/trunk/plots/dbpedia_euc_k6_map.png
+python2.7 visualize_map.py dbpedia_cir_k6/centers/part-00000 dbpedia_cir_k6/clusters/part-00000 comma kmeans/trunk/plots/dbpedia_cir_k6_map.png
 
 ## compare runtime of three datasets using k = 3, 3 thread
 for i in 1 2 3; do hadoop fs -rm -r synthetic_euc_k3_speed; spark-submit --master local[3] kmeans_exec.py sample_geo.txt 3 Euclidean synthetic_euc_k3_speed/centers synthetic_euc_k3_speed/clusters tab; done
