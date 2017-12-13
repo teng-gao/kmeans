@@ -1,0 +1,13 @@
+Partial Data
+Euclidean
+K = 4	1.4 mins
+K = 6	1.6 mins
+K = 8	1.7 mins
+Great Circle Distance
+K = 4	20 mins
+K = 6	27 mins
+K = 8	34 mins
+
+Full Data
+Great Circle Distance
+K = 6	53 mins
